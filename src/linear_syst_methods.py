@@ -111,10 +111,7 @@ def descomposicion_LU(A: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     ``U``: matriz triangular superior. Se obtiene de la matriz ``A`` después de aplicar la eliminación gaussiana.
     """
 
-    A = np.array(
-        A, dtype=float
-    )  # convertir en float, porque si no, puede convertir como entero
-
+    A = np.array(A, dtype=float)  # convertir en float
     assert A.shape[0] == A.shape[1], "La matriz A debe ser cuadrada."
     n = A.shape[0]
 
@@ -122,22 +119,23 @@ def descomposicion_LU(A: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
 
     for i in range(0, n):  # loop por columna
 
-        # --- deterimnar pivote
-        if A[i, i] == 0:
-            raise ValueError("No existe solución única.")
+        # --- Determinar pivote
+        max_row = i + np.argmax(np.abs(A[i:, i]))  # Encuentra la fila con el mayor valor absoluto
+        if A[max_row, i] == 0:
+            raise ValueError("La matriz es singular y no tiene solución única.")
 
-        # --- Eliminación: loop por fila
+        # Intercambiar filas en A y L
+        if max_row != i:
+            A[[i, max_row]] = A[[max_row, i]]
+            if i > 0:
+                L[[i, max_row], :i] = L[[max_row, i], :i]
+
+        # --- Eliminación
         L[i, i] = 1
         for j in range(i + 1, n):
             m = A[j, i] / A[i, i]
-            A[j, i:] = A[j, i:] - m * A[i, i:]
-
+            A[j, i:] -= m * A[i, i:]
             L[j, i] = m
-
-        logging.info(f"\n{A}")
-
-    if A[n - 1, n - 1] == 0:
-        raise ValueError("No existe solución única.")
 
     return L, A
 
